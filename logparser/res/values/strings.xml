@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">logparser</string>
+    <string name="run">Start(Talkkak)</string>
+    <string name="parse">Parse/Reset</string>
+    <string name="parsefull">Complete Parse</string>
+    <string name="parsegroup">Single Finger Activity</string>
+    <string name="Exit">Exit</string>
+    <string name="hello_world">Hello world!</string>
+
+</resources>
