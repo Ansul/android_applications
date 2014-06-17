@@ -1,4 +1,4 @@
-package com.example.logparser;
+package com.kernel.logparser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,7 @@ public class GroupedTouchActivity extends View {
     
 	    //System.out.println("OnTouchObjectEvent called\n");				DEBUG log
 	  	
-	  	int eventX, eventY;	  	
+	  	float eventX, eventY;	  	
     	TouchObject temp;
     	if(parse_flag && count>0){				//Check the value, if parse_flag set start activity again or continue
     		count=0;
@@ -83,8 +83,10 @@ public class GroupedTouchActivity extends View {
     		    	mColor=colorpicker(temp.getFinger());						//Decide the color before traversing the path
     		    	
     				path.addCircle((float)eventX,  (float)eventY,(float) 3,Path.Direction.CW);
-    				Toast.makeText(mContext,eventX+ ", "+eventY+ ", "+temp.getPressure()+" (PRESS) "+" <"+temp.getFinger()+">", 
-    						Toast.LENGTH_SHORT).show();    				
+    				MainActivity.gToast.cancel();
+    				MainActivity.gToast=Toast.makeText(mContext,eventX+ ", "+eventY+ ", "+temp.getPressure()+" (PRESS) "+" <"+temp.getFinger()+">", 
+    						Toast.LENGTH_LONG);    
+    				MainActivity.gToast.show();
     				path.moveTo(eventX, eventY);
     				mPressRelease[temp.getFinger()][0]=temp;
     			}
@@ -94,9 +96,15 @@ public class GroupedTouchActivity extends View {
     				//System.out.println("Enter in released if condition");         DEBUG log
     				mColor=colorpicker(temp.getFinger());						//Decide the color before traversing the path
     				path.addCircle((float)eventX,  (float)eventY,(float) 0.6,Path.Direction.CW);
-    				Toast.makeText(mContext,eventX+ ", "+eventY+ " (RELEASE)"+" <"+temp.getFinger()+">", Toast.LENGTH_SHORT).show();
+    				MainActivity.gToast.cancel();
+    				MainActivity.gToast=Toast.makeText(mContext,eventX+ ", "+eventY+ " (RELEASE)"+" <"+temp.getFinger()+">", Toast.LENGTH_LONG);
+    				MainActivity.gToast.show();
+    				
     				mPressRelease[temp.getFinger()][1]=temp;
-    				path.moveTo(mPressRelease[temp.getFinger()][0].getX(), mPressRelease[temp.getFinger()][0].getY());
+    				if(mPressRelease[temp.getFinger()][0]!=null)
+    					path.moveTo(mPressRelease[temp.getFinger()][0].getX(), mPressRelease[temp.getFinger()][0].getY());
+    				else
+    					path.moveTo(0,0);
     				path.lineTo(eventX, eventY);
     			}
     			count++;
@@ -115,48 +123,48 @@ public class GroupedTouchActivity extends View {
 	private int colorpicker(int finger) {
   			switch(finger){
   				case 0: path=new Path();
-  						path_color_list.add( new Pair(path,Color.BLACK));
-  						mColor=Color.BLACK;
+  					path_color_list.add( new Pair(path,Color.BLACK));
+  					mColor=Color.BLACK;
   					break;
   				case 1: path=new Path();
-					path_color_list.add( new Pair(path,Color.BLUE));
-					mColor=Color.BLUE;
+  					path_color_list.add( new Pair(path,Color.BLUE));
+  					mColor=Color.BLUE;
   					break;
   				case 2: path=new Path();
-					path_color_list.add( new Pair(path,Color.CYAN));
-					mColor=Color.CYAN;
+  					path_color_list.add( new Pair(path,Color.GREEN));
+  					mColor=Color.GREEN;
   					break;
   				case 3: path=new Path();
-					path_color_list.add( new Pair(path,Color.DKGRAY));
-					mColor=Color.DKGRAY;
+  					path_color_list.add( new Pair(path,Color.MAGENTA));
+  					mColor=Color.MAGENTA;
   					break;
   				case 4: path=new Path();
-					path_color_list.add( new Pair(path,Color.GRAY));
-					mColor=Color.GRAY;
+  					path_color_list.add( new Pair(path,Color.RED));
+  					mColor=Color.RED;
   					break;
   				case 5: path=new Path();
-					path_color_list.add( new Pair(path,Color.GREEN));
-					mColor=Color.GREEN;
+  					path_color_list.add( new Pair(path,Color.rgb(51,181,229)));
+  					mColor=Color.CYAN;
   					break;
   				case 6: path=new Path();
-					path_color_list.add( new Pair(path,Color.LTGRAY));
-					mColor=Color.LTGRAY;
+  					path_color_list.add( new Pair(path,Color.LTGRAY));
+  					mColor=Color.LTGRAY;
   					break;
   				case 7: path=new Path();
-					path_color_list.add( new Pair(path,Color.MAGENTA));
-					mColor=Color.MAGENTA;
+  					path_color_list.add( new Pair(path,Color.rgb(255,187,56)));
+  					mColor=Color.DKGRAY;
   					break;
   				case 8: path=new Path();
-					path_color_list.add( new Pair(path,Color.RED));
-					mColor=Color.RED;
+  					path_color_list.add( new Pair(path,Color.rgb(153,51,204)));
+  					mColor=Color.GRAY;
   					break;
   				case 9: path=new Path();
-					path_color_list.add( new Pair(path,Color.YELLOW));
-					mColor=Color.YELLOW;
+  					path_color_list.add( new Pair(path,Color.YELLOW));
+  					mColor=Color.YELLOW;
   					break;
   				default: path=new Path();
-					path_color_list.add( new Pair(path,Color.BLACK)); 
-					mColor=Color.BLACK; 				
+  					path_color_list.add( new Pair(path,Color.BLACK)); 
+  					mColor=Color.BLACK; 			
   			}
   			return mColor;
   	}

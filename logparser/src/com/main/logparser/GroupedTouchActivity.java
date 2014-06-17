@@ -1,7 +1,9 @@
-package com.example.logparser;
+package com.main.logparser;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.kernel.logparser.MainActivity;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -15,7 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-public class SingleTouchActivity extends View {
+public class GroupedTouchActivity extends View {
   private Paint paint = new Paint();
   private Path path=new Path();
   private Context mContext;									//Passing context within class for TOAST notification
@@ -28,13 +30,13 @@ public class SingleTouchActivity extends View {
   																		  index for same finger */
   
   List<Pair<Path, Integer>> path_color_list = new ArrayList<Pair<Path,Integer>>(); //Different color for each path
+
   
-  public SingleTouchActivity(Context context, AttributeSet attrs) {
+  public GroupedTouchActivity(Context context, AttributeSet attrs) {
     super(context, attrs);
-    
     mContext=context;
     paint.setAntiAlias(true);
-    paint.setStrokeWidth(3f);
+    paint.setStrokeWidth(1f);
     //paint.setColor(Color.BLACK);   					Default color BLACK
     paint.setStyle(Paint.Style.STROKE);
     paint.setStrokeJoin(Paint.Join.ROUND);
@@ -45,8 +47,10 @@ public class SingleTouchActivity extends View {
   protected void onDraw(Canvas canvas) {	 
 	  	   
 	  for (Pair<Path,Integer> path_clr : path_color_list ){
-		   paint.setColor(path_clr.second);
-		  canvas.drawPath( path_clr.first, paint);
+		  if(path_clr.second==mColor){
+			   paint.setColor(path_clr.second);
+			  canvas.drawPath( path_clr.first, paint);
+			  }
 		  
 	  }
   }
@@ -57,13 +61,13 @@ public class SingleTouchActivity extends View {
     
 	    //System.out.println("OnTouchObjectEvent called\n");				DEBUG log
 	  	
-	  	int eventX, eventY;	  	
+	  	float eventX, eventY;	  	
     	TouchObject temp;
     	if(parse_flag && count>0){				//Check the value, if parse_flag set start activity again or continue
     		count=0;
     		parse_flag=false;
     	}
-      
+    	
     	try{
     		
     	
@@ -75,32 +79,66 @@ public class SingleTouchActivity extends View {
     			eventX = temp.getX();
     			eventY = temp.getY();
     			    			
-    		    if (temp.isDir()){
+    		    if (temp.isDir()==0){
     				
     				//System.out.println("Enter in pressed if condition");         DEBUG log
     		    	//path=new Path();
     		    	mColor=colorpicker(temp.getFinger());						//Decide the color before traversing the path
     		    	
     				path.addCircle((float)eventX,  (float)eventY,(float) 3,Path.Direction.CW);
-    				Toast.makeText(mContext,eventX+ ", "+eventY+ ", "+temp.getPressure()+" (PRESS) "+" <"+temp.getFinger()+">", 
-    						Toast.LENGTH_SHORT).show();    				
+    				if(MainActivity.gToast!=null){
+    		    		
+    					MainActivity.gToast.cancel();
+    				}
+    				MainActivity.gToast=Toast.makeText(mContext,eventX+ ", "+eventY+ ", "+" (PRESS) "+" <"+temp.getFinger()+">", 
+    						Toast.LENGTH_LONG);    
+    				MainActivity.gToast.show();
+    				
     				path.moveTo(eventX, eventY);
     				mPressRelease[temp.getFinger()][0]=temp;
     			}
     			
-    			else{
+    			else if(temp.isDir()==1){
     				
     				//System.out.println("Enter in released if condition");         DEBUG log
     				mColor=colorpicker(temp.getFinger());						//Decide the color before traversing the path
-    				path.addCircle((float)eventX,  (float)eventY,(float) 0.6,Path.Direction.CW);
-    				Toast.makeText(mContext,eventX+ ", "+eventY+ " (RELEASE)"+" <"+temp.getFinger()+">", Toast.LENGTH_SHORT).show();
+    				path.addCircle((float)eventX,  (float)eventY,(float) 2,Path.Direction.CW);
+    				
+    				if(MainActivity.gToast!=null){
+    		    		
+    					MainActivity.gToast.cancel();
+    				}
+    				MainActivity.gToast=Toast.makeText(mContext,eventX+ ", "+eventY+ " (MOVE)"+" <"+temp.getFinger()+">", Toast.LENGTH_LONG);
+    				MainActivity.gToast.show();
+    				
     				mPressRelease[temp.getFinger()][1]=temp;
-    				if(mPressRelease[temp.getFinger()][0]!=null)
+    				if(mPressRelease[temp.getFinger()][0]!=null){
     					path.moveTo(mPressRelease[temp.getFinger()][0].getX(), mPressRelease[temp.getFinger()][0].getY());
+    					mPressRelease[temp.getFinger()][0]=mPressRelease[temp.getFinger()][1];
+    				}
     				else
     					path.moveTo(0,0);
     				path.lineTo(eventX, eventY);
     			}
+    			else{
+    				mColor=colorpicker(temp.getFinger());						//Decide the color before traversing the path
+    				path.addCircle((float)eventX,  (float)eventY,(float) 1,Path.Direction.CW);
+    				
+    				if(MainActivity.gToast!=null){
+    		    		
+    					MainActivity.gToast.cancel();
+    				}
+    				MainActivity.gToast=Toast.makeText(mContext,eventX+ ", "+eventY+ " (RELEASE)"+" <"+temp.getFinger()+">", Toast.LENGTH_LONG);
+    				MainActivity.gToast.show();
+    				
+    				mPressRelease[temp.getFinger()][1]=temp;
+    				if(mPressRelease[temp.getFinger()][0]!=null)
+    					path.moveTo(mPressRelease[temp.getFinger()][0].getX(), mPressRelease[temp.getFinger()][0].getY());    					
+    				else
+    					path.moveTo(0,0);
+    				path.lineTo(eventX, eventY);
+    			}
+    			
     			count++;
     		}
     	}
@@ -121,44 +159,44 @@ public class SingleTouchActivity extends View {
   						mColor=Color.BLACK;
   					break;
   				case 1: path=new Path();
-					path_color_list.add( new Pair(path,Color.BLUE));
-					mColor=Color.BLUE;
-  					break;
+						path_color_list.add( new Pair(path,Color.BLUE));
+						mColor=Color.BLUE;
+						break;
   				case 2: path=new Path();
-					path_color_list.add( new Pair(path,Color.GREEN));
-					mColor=Color.GREEN;
-  					break;
+						path_color_list.add( new Pair(path,Color.GREEN));
+						mColor=Color.GREEN;
+						break;
   				case 3: path=new Path();
-					path_color_list.add( new Pair(path,Color.MAGENTA));
-					mColor=Color.MAGENTA;
-  					break;
+						path_color_list.add( new Pair(path,Color.MAGENTA));
+						mColor=Color.MAGENTA;
+						break;
   				case 4: path=new Path();
-					path_color_list.add( new Pair(path,Color.RED));
-					mColor=Color.RED;
-  					break;
+						path_color_list.add( new Pair(path,Color.RED));
+						mColor=Color.RED;
+						break;
   				case 5: path=new Path();
-					path_color_list.add( new Pair(path,Color.CYAN));
-					mColor=Color.CYAN;
-  					break;
+						path_color_list.add( new Pair(path,Color.CYAN));
+						mColor=Color.CYAN;
+						break;
   				case 6: path=new Path();
-					path_color_list.add( new Pair(path,Color.LTGRAY));
-					mColor=Color.LTGRAY;
-  					break;
+						path_color_list.add( new Pair(path,Color.LTGRAY));
+						mColor=Color.LTGRAY;
+						break;
   				case 7: path=new Path();
-					path_color_list.add( new Pair(path,Color.DKGRAY));
-					mColor=Color.DKGRAY;
-  					break;
+						path_color_list.add( new Pair(path,Color.DKGRAY));
+						mColor=Color.DKGRAY;
+						break;
   				case 8: path=new Path();
-					path_color_list.add( new Pair(path,Color.GRAY));
-					mColor=Color.GRAY;
-  					break;
+						path_color_list.add( new Pair(path,Color.GRAY));
+						mColor=Color.GRAY;
+						break;
   				case 9: path=new Path();
-					path_color_list.add( new Pair(path,Color.YELLOW));
-					mColor=Color.YELLOW;
-  					break;
+						path_color_list.add( new Pair(path,Color.YELLOW));
+						mColor=Color.YELLOW;
+						break;
   				default: path=new Path();
-					path_color_list.add( new Pair(path,Color.BLACK)); 
-					mColor=Color.BLACK; 				
+						path_color_list.add( new Pair(path,Color.BLACK)); 
+						mColor=Color.BLACK; 				
   			}
   			return mColor;
   	}
